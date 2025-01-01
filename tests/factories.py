@@ -17,9 +17,10 @@
 """
 Test Factory to make fake objects for testing
 """
+
 import factory
 from factory.fuzzy import FuzzyChoice, FuzzyDecimal
-from service.models import Product, Category
+from service.models import Product, Category  # Ensure the import is updated correctly
 
 
 class ProductFactory(factory.Factory):
@@ -27,8 +28,45 @@ class ProductFactory(factory.Factory):
 
     class Meta:
         """Maps factory to data model"""
-
         model = Product
 
+    # Auto-incrementing ID
     id = factory.Sequence(lambda n: n)
-   ## Add code to create Fake Products 
+
+    # FuzzyChoice for product name from a predefined list
+    name = FuzzyChoice(
+        choices=[
+            "Hat",
+            "Pants",
+            "Shirt",
+            "Apple",
+            "Banana",
+            "Pots",
+            "Towels",
+            "Ford",
+            "Chevy",
+            "Hammer",
+            "Wrench",
+        ]
+    )
+
+    # Faker for random descriptive text
+    description = factory.Faker("text")
+
+    # FuzzyDecimal for price range between $0.50 and $2000.00
+    price = FuzzyDecimal(0.5, 2000.0, 2)
+
+    # FuzzyChoice for availability (True or False)
+    available = FuzzyChoice(choices=[True, False])
+
+    # FuzzyChoice for random category from the Category Enum
+    category = FuzzyChoice(
+        choices=[
+            Category.UNKNOWN,
+            Category.CLOTHS,
+            Category.FOOD,
+            Category.HOUSEWARES,
+            Category.AUTOMOTIVE,
+            Category.TOOLS,
+        ]
+    )

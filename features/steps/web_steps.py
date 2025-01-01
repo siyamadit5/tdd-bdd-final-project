@@ -40,15 +40,18 @@ def step_impl(context):
     # Uncomment next line to take a screenshot of the web page
     # context.driver.save_screenshot('home_page.png')
 
+
 @then('I should see "{message}" in the title')
 def step_impl(context, message):
     """ Check the document title for a message """
     assert(message in context.driver.title)
 
+
 @then('I should not see "{text_string}"')
 def step_impl(context, text_string):
     element = context.driver.find_element(By.TAG_NAME, 'body')
     assert(text_string not in element.text)
+
 
 @when('I set the "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
@@ -57,17 +60,20 @@ def step_impl(context, element_name, text_string):
     element.clear()
     element.send_keys(text_string)
 
+
 @when('I select "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = Select(context.driver.find_element(By.ID, element_id))
     element.select_by_visible_text(text)
 
+
 @then('I should see "{text}" in the "{element_name}" dropdown')
 def step_impl(context, text, element_name):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
     element = Select(context.driver.find_element(By.ID, element_id))
     assert(element.first_selected_option.text == text)
+
 
 @then('the "{element_name}" field should be empty')
 def step_impl(context, element_name):
@@ -87,6 +93,7 @@ def step_impl(context, element_name):
     context.clipboard = element.get_attribute('value')
     logging.info('Clipboard contains: %s', context.clipboard)
 
+
 @when('I paste the "{element_name}" field')
 def step_impl(context, element_name):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
@@ -98,13 +105,21 @@ def step_impl(context, element_name):
 
 ##################################################################
 # This code works because of the following naming convention:
-# The buttons have an id in the html hat is the button text
+# The buttons have an id in the html that is the button text
 # in lowercase followed by '-btn' so the Clean button has an id of
 # id='clear-btn'. That allows us to lowercase the name and add '-btn'
 # to get the element id of any button
 ##################################################################
 
-## UPDATE CODE HERE ##
+@when('I press the "{button}" button')
+def step_impl(context, button):
+    """Find and click a button by its name."""
+    button_id = button.lower().replace(' ', '-') + '-btn'  # Adding support for spaces in button names
+    button_element = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.element_to_be_clickable((By.ID, button_id))
+    )
+    button_element.click()
+
 
 ##################################################################
 # This code works because of the following naming convention:
@@ -124,6 +139,7 @@ def step_impl(context, text_string, element_name):
     )
     assert(found)
 
+
 @when('I change "{element_name}" to "{text_string}"')
 def step_impl(context, element_name, text_string):
     element_id = ID_PREFIX + element_name.lower().replace(' ', '_')
@@ -132,3 +148,37 @@ def step_impl(context, element_name, text_string):
     )
     element.clear()
     element.send_keys(text_string)
+
+##################################################################
+# Verify for a specific name or text to be present
+@then('I should see "{name}" in the results')
+def step_impl(context, name):
+    """Check if a specific name or text is present in the search results."""
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'search_results'),
+            name
+        )
+    )
+    assert(found), f'Expected text "{name}" not found in search results'
+
+
+# Verify for a specific name or text to NOT be present
+@then('I should not see "{name}" in the results')
+def step_impl(context, name):
+    """Check if a specific name or text is NOT present in the search results."""
+    element = context.driver.find_element(By.ID, 'search_results')
+    assert(name not in element.text), f'Unexpected text "{name}" found in search results'
+
+
+# Verify that a specific message is present
+@then('I should see the message "{message}"')
+def step_impl(context, message):
+    """Check if a specific message is displayed in the UI."""
+    found = WebDriverWait(context.driver, context.wait_seconds).until(
+        expected_conditions.text_to_be_present_in_element(
+            (By.ID, 'flash_message'),
+            message
+        )
+    )
+    assert(found), f'Expected message "{message}" not found in flash message'
